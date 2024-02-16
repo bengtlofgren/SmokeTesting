@@ -24,7 +24,8 @@ with open(proposal_path, "r") as f:
 
 proposal["data"] = wasm_bytes
 
-with open(proposal_path, "w") as f:
+new_proposal_path = proposal_path.replace(".json", "_edited.json")
+with open(new_proposal_path, "w") as f:
     json.dump(proposal, f)
 
-print(f"Added wasm to {proposal_path}")
+print(f"Added wasm to {new_proposal_path}")

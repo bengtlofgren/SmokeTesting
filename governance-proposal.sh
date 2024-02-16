@@ -59,9 +59,9 @@ sed -i -e "s/\"grace_epoch\":.*/\"grace_epoch\": $GRACE_EPOCH/g" $PROPOSAL
 python3 $SCRIPT_DIR/utils/add_wasm_proposal.py $PROPOSAL $SCRIPT_DIR/utils/init_inflation_pos_and_pgf.wasm
 
 echo "New proposal is catted below:"
-cat $PROPOSAL
+cat $SCRIPT_DIR/utils/proposal_with_wasm_edited.json
 
-$NAMADA_BIN_DIR/namadac --base-dir $BASE_DIR_2 init-proposal --data-path $SCRIPT_DIR/utils/proposal_with_wasm.json --signing-keys $SIGNING_KEYS --node $NODE --gas-limit 80000 --gas-price 0.01
+$NAMADA_BIN_DIR/namadac --base-dir $BASE_DIR_2 init-proposal --data-path $SCRIPT_DIR/utils/proposal_with_wasm_edited.json --signing-keys $SIGNING_KEYS --node $NODE --gas-limit 80000 --gas-price 0.01
 
 CURRENT_EPOCH=$($NAMADA_BIN_DIR/namadac --base-dir $BASE_DIR_2 epoch --node $NODE | cut -d':' -f2 | tr -d '[:space:]')
 

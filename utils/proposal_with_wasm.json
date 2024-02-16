@@ -11,10 +11,10 @@
             "details": "Bringing Namada to the moon in no time is easily achievable. We just need to pass this governance proposal and set the plan in action",
             "requires": ""
         },
-        "author": "atest1v4ehgw368ymnzsf5g5u5gv6rxezyxwfhxccnxsengdz5vdesg5mrjvp4xse5xs338ymry33cltfrgt",
-        "voting_start_epoch": 21,
-        "voting_end_epoch": 24,
-        "grace_epoch": 30
+        "author": "tnam1q9jpj9u5p6ugjylarkwmj9tsxr0pjlgpn5wa8ff0",
+        "voting_start_epoch": 4,
+        "voting_end_epoch": 8,
+        "grace_epoch": 10
     },
     "data": [0]
 }
