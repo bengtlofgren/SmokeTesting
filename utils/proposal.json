@@ -1,4 +1,5 @@
 {   "proposal": {
+        "id": 1,
         "content": {
             "title": "One Small Step for Namada, One Giant Leap for Memekind",
             "authors": "email@proton.me",

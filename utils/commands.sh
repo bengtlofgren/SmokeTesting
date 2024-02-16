@@ -1,3 +1,7 @@
+NODE="127.0.0.1:27657"
+BASE_DIR_2="/Users/unknowit/Heliax/namada/.namada-27657"
+TOKEN="NAAN"
+
 function generate_keys {
     # Takes two arguments
     # 1. The path to the directory containing the Namada binaries
@@ -11,9 +15,9 @@ function generate_keys {
     local namada_bin_dir="$1"
     local prefix="$2"
     echo "Generating keypairs"
-    $namada_bin_dir/namadaw key gen --alias $prefix"multisig-key-1" --unsafe-dont-encrypt
-    $namada_bin_dir/namadaw key gen --alias $prefix"multisig-key-2" --unsafe-dont-encrypt
-    $namada_bin_dir/namadaw key gen --alias $prefix"multisig-key-3" --unsafe-dont-encrypt
+    $namada_bin_dir/namadaw --base-dir "$BASE_DIR_2" gen --alias $prefix"multisig-key-1" --unsafe-dont-encrypt
+    $namada_bin_dir/namadaw --base-dir "$BASE_DIR_2" gen --alias $prefix"multisig-key-2" --unsafe-dont-encrypt
+    $namada_bin_dir/namadaw --base-dir "$BASE_DIR_2" gen --alias $prefix"multisig-key-3" --unsafe-dont-encrypt
 }
 
 function init_account {
@@ -35,31 +39,31 @@ function init_account {
     echo "Creating new account: $account_name"
     
     # Create account
-    $namada_bin_dir/namadac init-account --alias "$account_name" \
+    $namada_bin_dir/namadac --base-dir "$BASE_DIR_2" init-account --alias "$account_name" \
         --public-keys "$public_keys" \
         --signing-keys "$public_keys" \
-        --threshold $threshold
+        --threshold $threshold \
+        --node $NODE
 }
 
 function fund_account {
     # Takes four arguments
     # 1. The path to the directory containing the Namada binaries
     # 2. The name of the account
-    # 3. The signing keys of the account
-    # 4. The amount to fund
+    # 3. The amount to fund
     
     NAMADA_BIN_DIR=$1
     ACCOUNT_NAME=$2
-    SIGNING_KEYS=$3
-    AMOUNT=$4
+    AMOUNT=$3
+    FAUCET="albert-key"
 
-    if [ "$#" != 4 ]; then
-        echo "Error: Invalid number of arguments. Expected 4 arguments : NAMADA_BIN_DIR, ACCOUNT_NAME, SIGNING_KEYS, AMOUNT."
+    if [ "$#" != 3 ]; then
+        echo "Error: Invalid number of arguments. Expected 4 arguments : NAMADA_BIN_DIR, ACCOUNT_NAME, AMOUNT."
         exit 1
     fi
     echo "Funding account: $ACCOUNT_NAME"
-    $NAMADA_BIN_DIR/namadac transfer --source "faucet" --target "$ACCOUNT_NAME" \
-        --amount $AMOUNT --token NAM --signing-keys "$SIGNING_KEYS"
+    $NAMADA_BIN_DIR/namadac --base-dir "$BASE_DIR_2" transfer --source $FAUCET --target "$ACCOUNT_NAME" \
+        --amount $AMOUNT --token $TOKEN --signing-keys "$FAUCET" --node $NODE
 }
 
 function fund_account_bo {
@@ -73,14 +77,15 @@ function fund_account_bo {
     ACCOUNT_NAME=$2
     SIGNING_KEYS=$3
     AMOUNT=$4
+    FAUCET="albert-key"
 
     if [ "$#" != 4 ]; then
         echo "Error: Invalid number of arguments. Expected 4 arguments : NAMADA_BIN_DIR, ACCOUNT_NAME, SIGNING_KEYS, AMOUNT."
         exit 1
     fi
     echo "Funding account: $ACCOUNT_NAME"
-    $NAMADA_BIN_DIR/namadac transfer --source "faucet" --target "$ACCOUNT_NAME" \
-        --amount $AMOUNT --token NAM --signing-keys "$SIGNING_KEYS" --broadcast-only
+    $NAMADA_BIN_DIR/namadac --base-dir "$BASE_DIR_2" transfer --source $FAUCET --target "$ACCOUNT_NAME" \
+        --amount $AMOUNT --token $TOKEN --signing-keys "$FAUCET" --broadcast-only --node $NODE
 }
 
 function transfer {
@@ -102,8 +107,8 @@ function transfer {
         exit 1
     fi
     echo "Transferring $amount NAM from $account_name to $target_account"
-    $namada_bin_dir/namadac transfer --source "$account_name" --target "$target_account" \
-        --amount $amount --token NAM --signing-keys "$signing_keys"
+    $namada_bin_dir/namadac --base-dir "$BASE_DIR_2" transfer --source "$account_name" --target "$target_account" \
+        --amount $amount --token $TOKEN --signing-keys "$signing_keys" --node $NODE
 }
 
 function basic_multisig {
@@ -125,16 +130,21 @@ function basic_multisig {
     # Create account
     local account_name=$prefix"multisig-account-1"
     local public_keys="${prefix}multisig-key-1,${prefix}multisig-key-2,${prefix}multisig-key-3"
+
+    fund_account "$namada_bin_dir" "${prefix}multisig-key-1" 2000
+    fund_account "$namada_bin_dir" "${prefix}multisig-key-2" 2000
+    fund_account "$namada_bin_dir" "${prefix}multisig-key-3" 2000
+    
     init_account "$namada_bin_dir" "$account_name" "$public_keys" 2
 
     echo "Funding account"
 
     local signing_key="${prefix}multisig-key-1"
     # Fund account
-    fund_account "$namada_bin_dir" "$account_name" "$signing_key" 1000
-    fund_account "$namada_bin_dir" "$account_name" "$signing_key" 1000
+    fund_account "$namada_bin_dir" "$account_name" 1000
+    fund_account "$namada_bin_dir" "$account_name" 1000
 
-    command_output=$($namada_bin_dir/namadac balance --owner $account_name --token NAM)
+    command_output=$($namada_bin_dir/namadac --base-dir "$BASE_DIR_2" balance --owner $account_name --token $TOKEN --node $NODE)
 
     if echo "$command_output" | grep -q "2000"; then
         echo "Output verification succeeded!"
@@ -160,7 +170,7 @@ function generate_masp_keys {
     echo "Generating masp keypairs"
 
     for i in $(seq 1 $number_of_keys); do
-        $namada_bin_dir/namadaw masp gen-key --alias $prefix"masp-key-$i" --unsafe-dont-encrypt
+        $namada_bin_dir/namadaw --base-dir "$BASE_DIR_2" masp gen-key --alias $prefix"masp-key-$i" --unsafe-dont-encrypt
     done
 }
 
@@ -180,7 +190,7 @@ function generate_masp_addresses {
     local number_of_addresses="$3"
 
     for i in $(seq 1 $number_of_addresses); do
-        $namada_bin_dir/namadaw masp gen-addr --alias $prefix"masp-address-$i" --key $prefix"masp-key-$i"
+        $namada_bin_dir/namadaw --base-dir "$BASE_DIR_2" masp gen-addr --alias $prefix"masp-address-$i" --key $prefix"masp-key-$i"
     done
 }
 
@@ -203,8 +213,8 @@ function bond_tokens {
         exit 1
     fi
     echo "Bonding $amount NAM from $account_name to $target_account"
-    $namada_bin_dir/namadac bond --source "$account_name" --validator "$target_account" \
-        --amount $amount --signing-keys "$signing_keys"
+    $namada_bin_dir/namadac --base-dir "$BASE_DIR_2" bond --source "$account_name" --validator "$target_account" \
+        --amount $amount --signing-keys "$signing_keys" --node $NODE
 }
 
 function init_validator {
@@ -226,13 +236,15 @@ function init_validator {
 
     # Create account
     local public_keys="${prefix}multisig-key-1,${prefix}multisig-key-2,${prefix}multisig-key-3"
-    $namada_bin_dir/namadac init-validator --alias "$account_name" \
+    $namada_bin_dir/namadac --base-dir "$BASE_DIR_2" init-validator --alias "$account_name" \
         --account-keys "$public_keys" \
         --commission-rate 0.05 \
         --max-commission-rate-change 0.1 \
         --signing-keys "${prefix}multisig-key-1" \
         --unsafe-dont-encrypt \
-        --threshold 2
+        --threshold 2 \
+        --email "validator@gmail.com"
+        --node $NODE
 }
 
 function offline_transfer {
@@ -243,7 +255,7 @@ function offline_transfer {
     local target=$5
     local signing_keys=$6
 
-    namadac transfer \
+    namadac --base-dir "$BASE_DIR_2" transfer \
     --source $source \
     --target $target \
     --amount $amount \
@@ -256,5 +268,51 @@ function get_address {
     local namada_bin_dir=$1
     local account_name=$2
 
-    ACCOUNT_ADDRESS=$($NAMADA_BIN_DIR/namadaw address list | grep $ACCOUNT_NAME | awk '{print $2}')
+    ACCOUNT_ADDRESS=$($NAMADA_BIN_DIR/namadaw --base-dir "$BASE_DIR_2" address list | grep $ACCOUNT_NAME | awk '{print $2}')
+}
+
+function bond_validator {
+
+    local namada_bin_dir=$1
+    local source_address=$2
+    local signing_keys=$3
+
+    for i in $(seq 1 4); do
+        fund_account_bo "$namada_bin_dir" "$source_address" "$signing_keys" 1000
+    done
+
+    # echo "Sleeping for 10 seconds and a bit to allow transactions to be processed..."
+
+    # sleep $(($NUM_LOOPS + 10))
+
+    # Bond amount is NUM_LOOPS * 1000
+    BOND_AMOUNT=$((4 * 900))
+
+    validator_address_1=$($namada_bin_dir/namadac --base-dir "$BASE_DIR_2" bonded-stake --node $NODE | grep tnam | awk 'NR==1{print $1}' | cut -d':' -f1)
+
+    bond_tokens "$namada_bin_dir" "$source_address" $BOND_AMOUNT "$signing_keys" "$validator_address_1"
+}
+
+function bond_2_validators {
+
+    local namada_bin_dir=$1
+    local source_address=$2
+    local signing_keys=$3
+
+    for i in $(seq 1 4); do
+        fund_account_bo "$namada_bin_dir" "$source_address" "$signing_keys" 1000
+    done
+
+    # echo "Sleeping for 10 seconds and a bit to allow transactions to be processed..."
+
+    # sleep $(($NUM_LOOPS + 10))
+
+    # Bond amount is NUM_LOOPS * 1000
+    BOND_AMOUNT=$((2 * 900))
+
+    validator_address_1=$($namada_bin_dir/namadac --base-dir "$BASE_DIR_2" bonded-stake --node $NODE | grep tnam | awk 'NR==1{print $1}' | cut -d':' -f1)
+    validator_address_2=$($namada_bin_dir/namadac --base-dir "$BASE_DIR_2" bonded-stake --node $NODE | grep tnam | awk 'NR==2{print $1}' | cut -d':' -f1)
+
+    bond_tokens "$namada_bin_dir" "$source_address" $BOND_AMOUNT "$signing_keys" "$validator_address_1"
+    bond_tokens "$namada_bin_dir" "$source_address" $BOND_AMOUNT "$signing_keys" "$validator_address_2"
 }

@@ -5,9 +5,12 @@
 # TODO: This script is currently broken. It needs to be fixed.
 
 
+NODE="127.0.0.1:27657"
 SCRIPT_DIR="$(dirname $0)"
 source $SCRIPT_DIR/utils/validate.sh
 source $SCRIPT_DIR/utils/commands.sh
+
+BASE_DIR_2="/Users/unknowit/Library/Application Support/Namada"
 
 validate_arguments "$1"
 
@@ -16,14 +19,13 @@ RND=$(echo $RANDOM | md5sum | head -c 20; echo;)
 DEFAULT_PREFIX="${SMOKE_TESTING_PREFIX}${RND}-"
 PREFIX="${PREFIX:-$DEFAULT_PREFIX}"
 
-NUM_LOOPS="$2"
+# Get the validator addresses\
+echo $NAMADA_BIN_DIR
 
-# Assert that NUM_LOOPS is an integer
-if ! [[ "$NUM_LOOPS" =~ ^[0-9]+$ ]]; then
-    echo "Error: NUM_LOOPS must be an integer."
-    exit 1
-fi
+validator_address_1=$($NAMADA_BIN_DIR/namadac --base-dir "$BASE_DIR_2" bonded-stake --node $NODE | grep tnam | awk 'NR==1{print $1}' | cut -d':' -f1)
+validator_address_2=$($NAMADA_BIN_DIR/namadac --base-dir "$BASE_DIR_2" bonded-stake --node $NODE | grep tnam | awk 'NR==2{print $1}' | cut -d':' -f1)
 
+echo "The validator addresses are $validator_address_1 and $validator_address_2"
 # Generate key
 echo "Generating key pairs..."
 
@@ -33,7 +35,7 @@ KEY_NAME="${PREFIX}multisig-key-1"
 
 # Fund the key NUM_LOOPS times
 
-for i in $(seq 1 $NUM_LOOPS); do
+for i in $(seq 1 4); do
     fund_account_bo "$NAMADA_BIN_DIR" "$KEY_NAME" "$KEY_NAME" 1000
 done
 
@@ -42,9 +44,9 @@ done
 # sleep $(($NUM_LOOPS + 10))
 
 # Bond amount is NUM_LOOPS * 1000
-BOND_AMOUNT=$(($NUM_LOOPS * 900))
+BOND_AMOUNT=$((2 * 900))
 
-# init the validator account
-init_validator "$NAMADA_BIN_DIR" "$PREFIX" "${PREFIX}validator-1"
 
-bond_tokens "$NAMADA_BIN_DIR" "${PREFIX}multisig-key-1" $BOND_AMOUNT "${PREFIX}multisig-key-1" "${PREFIX}validator-1"
+bond_tokens "$NAMADA_BIN_DIR" "${PREFIX}multisig-key-1" $BOND_AMOUNT "${PREFIX}multisig-key-1" "$validator_address_1"
+bond_tokens "$NAMADA_BIN_DIR" "${PREFIX}multisig-key-1" $BOND_AMOUNT "${PREFIX}multisig-key-1" "$validator_address_2"
+

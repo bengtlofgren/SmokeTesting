@@ -1,3 +1,7 @@
+NODE="127.0.0.1:27657"
+TOKEN="NAAN"
+BASE_DIR_2="/Users/unknowit/Heliax/namada/.namada-27657"
+
 function check_balance {
     # The script expects 3 arguments:
     # 1. The path to the directory containing the Namada binaries
@@ -15,7 +19,7 @@ function check_balance {
 
     echo "Checking balance of account: $account_name"
 
-    command_output=$($namada_bin_dir/namadac balance --owner "$account_name" --token nam)
+    command_output=$($namada_bin_dir/namadac --base-dir $BASE_DIR_2 balance --owner "$account_name" --token $TOKEN --node $NODE)
 
     if echo "$command_output" | grep -q $amount; then
         echo "Output verification succeeded!"

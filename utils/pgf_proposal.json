@@ -1,0 +1,43 @@
+{
+    "proposal": {
+        "id": 1,
+        "content": {
+            "title": "One Small Step for Namada, One Giant Leap for Memekind",
+            "authors": "email@proton.me",
+            "discussions-to": "forum.namada.net/t/namada-proposal/1",
+            "created": "2069-04-20T00:04:44Z",
+            "license": "MIT",
+            "abstract": "We present a proposal that will send our community to the moon. ",
+            "details": "Bringing Namada to the moon in no time is easily achievable. We just need to pass this governance proposal and set the plan in action",
+            "requires": ""
+        },
+        "author": "tnam1q9rxk49a7y6fp8h5qwz47d6jhml0km2w2y7emqyz",
+        "voting_start_epoch": 1572,
+        "voting_end_epoch": 1578,
+        "grace_epoch": 1584
+    },
+    "data":
+    {
+        "continuous" : [
+            {
+                "Internal": 
+                    {
+                        
+                        "amount": "1337",
+                        "target": "tnam1q9rxk49a7y6fp8h5qwz47d6jhml0km2w2y7emqyz"
+                        
+                    }
+        }
+        ],
+        "retro" : [
+            {
+                "Internal": 
+                    {
+                        
+                        "amount": "1337",
+                        "target": "tnam1q9rxk49a7y6fp8h5qwz47d6jhml0km2w2y7emqyz"
+                    }
+            }
+        ]
+    }
+}
