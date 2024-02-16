@@ -276,17 +276,7 @@ function bond_validator {
     local namada_bin_dir=$1
     local source_address=$2
     local signing_keys=$3
-
-    for i in $(seq 1 4); do
-        fund_account_bo "$namada_bin_dir" "$source_address" "$signing_keys" 1000
-    done
-
-    # echo "Sleeping for 10 seconds and a bit to allow transactions to be processed..."
-
-    # sleep $(($NUM_LOOPS + 10))
-
-    # Bond amount is NUM_LOOPS * 1000
-    BOND_AMOUNT=$((4 * 900))
+    local BOND_AMOUNT=$4
 
     validator_address_1=$($namada_bin_dir/namadac --base-dir "$BASE_DIR_2" bonded-stake --node $NODE | grep tnam | awk 'NR==1{print $1}' | cut -d':' -f1)
 
